@@ -476,9 +476,10 @@ Example_Data <- SAU_Alaska %>%
   filter(scientific_name %in% c("Oncorhynchus kisutch","Oncorhynchus nerka","Oncorhynchus gorbuscha")) %>% 
   filter(fishing_sector != "Subsistence")
 
+# Set te axis ticks
 Breaks <- seq(1950,2010,10)
 
-ggplot() +
+Final_Plot <- ggplot() +
   geom_line( data = Example_Data,
              aes(x = year, 
                  y = tonnes/1000,
@@ -509,9 +510,10 @@ ggplot() +
     panel.border     = element_blank(), # No pannel border
     panel.grid.minor = element_line(colour="grey95"),
     panel.grid.major = element_blank(), # No grids
-    axis.ticks = element_blank(),
+    axis.ticks = element_line(colour = "black"),
     axis.text.x = element_text(size = 10,
                                angle = 45,
+                               hjust = 1,
                                face = "plain"),
     axis.text.y = element_text(size = 8),
     axis.title = element_text(size = 14),
@@ -523,13 +525,16 @@ ggplot() +
     legend.text = element_text(size = 10)
   )
   
+# Run me!
+Final_Plot
+
 # And now we save our plot!
 
 Plot_Name <- "Example_Plot.png"
 Path_Save <- "./" # some path where you want to save the plot
 
 ggsave(Plot_Name,
-       plot = last_plot(), # or you can say plot = Plot_4
+       plot = Final_Plot, # or you can say plot = last_plot()
        width = 9,
        height = 5,
        units = "in",
@@ -541,6 +546,97 @@ ggsave(Plot_Name,
 
 # Some other cool stuff you can do with ggplot2
 
-So `ggplot2` is a powerful package that can create beautiful graphs, but it has also evolved in something way more powerful. Because it is part of the Tydyverse family, you can combine your data manipulation and pipe it ( %>% ) all the way to your final graph! You can also make dynamic plots with the `plotty` package; maps with `geom_sf()`, `geom_tile()` and `geom_polygon()`; and recently I discovered that you can make GIFs with ``. Here follow some cool things you can do!
+So `ggplot2` is a powerful package that can create beautiful graphs, but it has also evolved in something way more powerful. Because it is part of the Tydyverse family, you can combine your data manipulation and pipe it ( %>% ) all the way to your final graph! You can also make dynamic plots with the `plotty` package; maps with `geom_sf()`, `geom_tile()` and `geom_polygon()`; and recently I discovered that you can make GIFs with `gganimate`. Here follow some cool things you can do!
+
+## You can combine your data wrangling with a plot
+
+```{r Dplyr_ggplot2 eval = T, eco = F}
+
+#  We can combine data wrangling with dplyr and tidyr with ggplot2 on a clean way!
+
+# Start with data wrangling
+SAU_Alaska %>% 
+  group_by(year,area_name,scientific_name,fishing_sector) %>% 
+  summarise_if(is.numeric,sum,na.rm=T) %>% 
+  filter(scientific_name %in% c("Oncorhynchus kisutch","Oncorhynchus nerka","Oncorhynchus gorbuscha")) %>% 
+  filter(fishing_sector != "Subsistence") %>% 
+  # And then include your plot
+  ggplot(., # The . in R means that you're using the data piped in the code
+         aes(x = year, 
+             y = tonnes,
+             colour = scientific_name
+         )
+  ) + # notice that once we switch to ggplot2 we use +
+  geom_point() # Notice how we changed the ggplot structure now
+  
+
+```
 
 
+## Mapping has never been this easy! 
+
+You literally need two lines of code in ggplot2 to plot a map *NOTE: This chunk requires you to have a speciefic shapefile.*
+
+```{r Mapping eval = F, eco = F}
+
+# Three lines of code is all you need!
+
+# requires
+# library(tools) # for file_path_sans_ext()
+
+# First we read in the shapefile
+path_world <- "~/Documents/UBC/Oceans_Project/Manuscript/Data/Spatial_Data/TM_WORLD_BORDERS"
+file_name <- "TM_WORLD_BORDERS"
+
+World_Land_sf <-st_read(dsn = path_world, 
+                         layer = file_path_sans_ext(file_name)
+)
+
+# I'm gpoing to subset for fast plotting
+
+Subset_Map <- World_Land_sf %>% 
+  filter(NAME %in% c("Brazil","Argentina","Chile","Uruguay","Bolivia","Peru"))
+
+# And now we plot with ggplot2
+ggplot(Subset_Map) +
+  geom_sf()
+  
+
+```
+
+
+## Move your grpahs for presenations! 
+
+`ggplot2` combines with `gganimate` to create dynamic plots, perfect for presentations! *Note that this chunk needs extra packages that you will have to install and load before runing it*
+
+```{r Moving_Point, eval = F , echo = F}
+
+# Devtools allows to install packages from github and other servers that are not CRANK
+# install.packages('devtools')
+
+# Install packcage gganimate from developer
+# devtools::install_github('thomasp85/gganimate')
+# library(gganimate)
+
+# Create a dataset for the example
+Animate_Data <- SAU_Alaska %>% 
+  group_by(year,area_name,scientific_name,fishing_sector) %>% 
+  summarise_if(is.numeric,sum,na.rm=T) %>% 
+  filter(scientific_name %in% c("Oncorhynchus kisutch","Oncorhynchus nerka","Oncorhynchus gorbuscha"),
+         fishing_sector == "Industrial",
+         year >= 2000)
+
+
+# And now we plot!
+
+# First our basic ggplot
+ggplot(Animate_Data, 
+       aes(x = year, 
+           y = tonnes)
+) + 
+  geom_point(size = 3, aes(colour = scientific_name)) +
+  theme_dark() +
+  # and just add the transition to bring it to live!
+  transition_states(states = year, wrap = FALSE)
+
+```
