@@ -9,11 +9,11 @@ output:
 
 # Libraries and data
 
-```{r setup, eval = T, echo = T, results = 'hide'}
+```{r setup, eval = T, echo = T, warning=F,message=F, results = 'hide'}
 
 # Library ####
 
-# Function to load multiple packages, it will install them if you don't have it already
+# Function to load multiple packages, it will install any that you don't have
 ipak <- function(pkg){
   new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
   if (length(new.pkg)) 
@@ -22,15 +22,13 @@ ipak <- function(pkg){
 }
 
 
-#### Library needed for this session ####
+#### Packages needed for this session ####
 packages <- c(
   "dplyr", # Data manipulation
   "tidyr", # Data manipulation
   "ggplot2", #Nice grpahs and spatial analysis
   "rgdal",
-  "RColorBrewer", # for plot colors
-  "ggrepel",
-  "gridExtra" # For edditing plot grids
+  "RColorBrewer" # for plot colors
 )
 
 ipak(packages)
@@ -64,17 +62,18 @@ So any basic plot will have to have, at least, these two components, however, th
 ggplot(data = Clean_Data, # tell ggplot your data source
        aes(x = year, # Note that the aesthetics set your x and y axis
            y = tonnes)
-       ) + # ggplot "adds"" components 
+       ) + # ggplot "adds" components 
   geom_point() # finally, included the geometrics (points in this case)
 
 # Alternative way.
+
 # I prefere this version because it allows to clearly see each layer you include to the plot
 
-ggplot(data = Clean_Data) + # call ggplot with your data
-  geom_point(
-    aes(x = year, # Note that the aesthetics set your x and y variables
+ggplot(data = Clean_Data) +
+  geom_point( # Include everything within geom_point()
+    aes(x = year, 
         y = tonnes)
-    )  # ggplot "adds"" components 
+    )  
   
 # And it can be as simple as...
 
@@ -140,6 +139,17 @@ ggplot(data = subset(Clean_Data, scientific_name  == "Oncorhynchus kisutch")) + 
         )
     )
 
+# And other characteristics like size, transparency, type, etc...
+
+ggplot(data = subset(Clean_Data, scientific_name  == "Oncorhynchus kisutch")) + # I choose one species
+  geom_point(
+    aes(x = year,
+        y = tonnes,
+        size = tonnes, # size
+        alpha = year #transparency
+        )
+    )
+
 
 ```
 
@@ -148,7 +158,7 @@ ggplot(data = subset(Clean_Data, scientific_name  == "Oncorhynchus kisutch")) + 
 
 `ggplot2`gives you the option to color all your variables or to color them by some third variable. Note that, when you want all of your points in one same color you have to call `color` (or `colour`, `ggplot2`does not discriminate!) outside the aesthetics (`aes()`). Alternatively, if you want to, say, set a color by species, this has to be within the `aes()`
 
-```{r Colours, eval = T, echo = T}
+```{r Colors, eval = T, echo = T}
 
 # Data for example
 
@@ -161,7 +171,7 @@ Example_Data <- Clean_Data %>%
 ggplot(data = Example_Data) + 
   geom_point(
     aes(x = year, 
-        y = tonnes), # Note that we closed aes here!
+        y = tonnes), 
     # colour = "red", # R is inclusive! 
     color = "blue"
     )  
@@ -235,11 +245,12 @@ You can change, modify and edit all your scales from the actual number to the ti
 
 ```{r Axis_Labels, eval = T, echo = F}
 
-# First lets work with the labels, you can use
+# First lets work with the labels, I like the labs() function
 
-# Lets use our previus plot
+# Let's use our previous plot
 P_Three <- P_Two + 
-  labs(title = "Landings statistics for Alaska between 1951 - 2010", # You can also use the "labs()" function
+  # Now we add the labs...
+  labs(title = "Landings statistics for Alaska between 1951 - 2010",
        subtitle = "This plot lab was made with labs()",
        x = "Year \n(1951 - 2010)",
        y = "Total landings (tonnes)",
@@ -263,9 +274,10 @@ We can also change the scales of our plot using `lims()`, `xlim()`, or/and `ylim
 
 P_Four <- P_Three +
   xlim(2000, 2010) + # I only want to show results from 2000 to 2010
-  ylim(0, 300000)  # I just want landings up to 300,000 tonnes
+  ylim(0, 300000)   # I just want landings up to 300,000 tonnes
 
 P_Four
+
 
 ```
 
@@ -277,8 +289,8 @@ There are over 50 functions that control different aspects of your scales and pl
 - `scale_fill_`, if you used `aes(fill = Variable)`
 - `scale_color_`, if you used `aes(color = Variable)`
 - `scale_alpha_`
-- `scale_x_`
-- `scale_y_`
+- `scale_x_`, used to eddit breaks and limits on the x axis
+- `scale_y_`, used to eddit breaks and limits on the y axis
 A complete list can be found in the [Official Website](https://ggplot2.tidyverse.org/reference/index.html#section-scales). In addition, `scale_colour_brewer()`, provides a great set of pallets.
 - 
 
@@ -297,6 +309,14 @@ ggplot() +geom_line( data = Example_Data,
   # scale_colour_brewer(palette = "Set2") +
   scale_colour_brewer("Salmons",
                       palette = "Set2")
+
+# Set axis options
+
+P_Three +
+  scale_x_continuous("Years of landings",
+                     breaks = c(2000,2005,2010),
+                     limits = c(2000,2010)
+                     )
 
 
 ```
@@ -402,14 +422,11 @@ There are many ways to create two plots in one. We will go trough the basic vers
 
 # Using facet_wrap()
 
-Multiple_Plots <- ggplot()  +geom_line( data = Example_Data,
+Multiple_Plots <- ggplot() + geom_line( data = Example_Data,
                                        aes(x = year, 
                                            y = tonnes
-                                       ) # Note that we closed aes here!
+                                       )
 ) +
-  # scale_colour_brewer() #+
-  # scale_colour_brewer(palette = "Greens") +
-  # scale_colour_brewer(palette = "Set2") +
   scale_colour_brewer("Salmons",
                       palette = "Set2") +
   facet_wrap(~scientific_name,
@@ -422,8 +439,11 @@ Multiple_Plots
 
 ### Theme also works in Multiple plots
 
-Multiple_Plots + theme(strip.text.x = element_text(size=8, angle=0,face="bold"),
-                       strip.background = element_rect(colour="red", fill="#CCCCFF")
+Multiple_Plots + theme(strip.text.x = element_text(size=8, 
+                                                   angle=0,
+                                                   face="bold"),
+                       strip.background = element_rect(colour="red", 
+                                                       fill="#CCCCFF")
                        )
 
 
@@ -441,20 +461,20 @@ ggplot() +
   geom_line( data = Example_Data,
              aes(x = year, 
                  y = tonnes/1000
-             ) # Note that we closed aes here!
-  ) + facet_wrap(~scientific_name + reporting_status,
-                 ncol = 2, # number of cols, alternatively `nrow=`
-                 scales = "free_y", # standarize scales
+             ) 
+  ) + facet_wrap(~scientific_name + reporting_status, # Just add a second variable
+                 ncol = 2, 
+                 scales = "free_y", 
                  strip.position = "top")
 
-# facet_grid()
+# We can also use facet_grid()
 
 ggplot() +
   geom_line( data = Example_Data,
              aes(x = year, 
                  y = tonnes/1000
-             ) # Note that we closed aes here!
-  ) + facet_grid(scientific_name ~ reporting_status,
+             ) 
+  ) + facet_grid(scientific_name ~ reporting_status, # Same idea, changes the position of the ~ symbol
                  scales = "free") +
    theme(strip.text.x = element_text(size=8, angle=0,face="bold"),
                        strip.text.y = element_text(size=5, angle=45,face="bold"),
@@ -480,36 +500,40 @@ Example_Data <- SAU_Alaska %>%
 Breaks <- seq(1950,2010,10)
 
 Final_Plot <- ggplot() +
+  # First we creat main plot
   geom_line( data = Example_Data,
              aes(x = year, 
                  y = tonnes/1000,
                  colour = scientific_name
-             ) # First we creat main plot
-  ) + facet_wrap(~fishing_sector, # Then we face wrap by Species and sector
-                 ncol = 3, # number of cols, alternatively `nrow=`
-                 scales = "free_y", # standarize scales
+             ) 
+  # Facet by fishing sector
+  ) + facet_wrap(~fishing_sector, 
+                 ncol = 3, 
+                 scales = "free_y", 
                  strip.position = "top") + 
   # Now we include labels
-  labs(title = "Landings statistics for Alaska between 1951 - 2010", # You can also use the "labs()" function
+  labs(title = "Landings statistics for Alaska between 1951 - 2010", 
        subtitle = "Presenting pink, coho , and sockeye salmon by sector",
        x = "Year \n(1951 - 2010)",
        y = "Total landings (tonnes)",
        color = "Species",
        caption = "*Data from The Sea Around Us",
        tag = "A") +
+  # Choose your scale colour abd breaks
   scale_color_brewer(palette = "Set1") +
-  scale_x_continuous(breaks = Breaks) + # Set the ticks of the plot
+  scale_x_continuous(breaks = Breaks) + 
   # Now we eddit the apearence 
   theme(
     plot.title = element_text(face = "bold",
                               colour = "blue"),
     plot.subtitle = element_text(face = "italic",
                                  colour = "blue"),
-    panel.background = element_blank(), # clean background
-    strip.background = element_rect(colour="black",fill = "lightgrey"), # clean background
-    panel.border     = element_blank(), # No pannel border
+    panel.background = element_blank(), 
+    strip.background = element_rect(colour="black",
+                                    fill = "lightgrey"), 
+    panel.border     = element_blank(), 
     panel.grid.minor = element_line(colour="grey95"),
-    panel.grid.major = element_blank(), # No grids
+    panel.grid.major = element_blank(), 
     axis.ticks = element_line(colour = "black"),
     axis.text.x = element_text(size = 10,
                                angle = 45,
@@ -517,9 +541,7 @@ Final_Plot <- ggplot() +
                                face = "plain"),
     axis.text.y = element_text(size = 8),
     axis.title = element_text(size = 14),
-    # legend.key = element_rect(colour = "black", # Around boxes
-    #                           fill = "grey90"), # legend boxes
-        legend.key = element_blank(),
+    legend.key = element_blank(),
     legend.position  = "bottom",
     legend.title = element_text(size = 12),
     legend.text = element_text(size = 10)
@@ -550,7 +572,7 @@ So `ggplot2` is a powerful package that can create beautiful graphs, but it has 
 
 ## You can combine your data wrangling with a plot
 
-```{r Dplyr_ggplot2 eval = T, eco = F}
+```{r Dplyr_ggplot2, eval = T, eco = F}
 
 #  We can combine data wrangling with dplyr and tidyr with ggplot2 on a clean way!
 
@@ -566,7 +588,7 @@ SAU_Alaska %>%
              y = tonnes,
              colour = scientific_name
          )
-  ) + # notice that once we switch to ggplot2 we use +
+  ) + # notice that once we switch to ggplot2 we use + again
   geom_point() # Notice how we changed the ggplot structure now
   
 
@@ -577,7 +599,7 @@ SAU_Alaska %>%
 
 You literally need two lines of code in ggplot2 to plot a map *NOTE: This chunk requires you to have a speciefic shapefile.*
 
-```{r Mapping eval = F, eco = F}
+```{r Mapping, eval = F, eco = F}
 
 # Three lines of code is all you need!
 
