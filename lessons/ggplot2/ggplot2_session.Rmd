@@ -51,7 +51,7 @@ Clean_Data <- SAU_Alaska %>%
 
 # The basic ggplot2 structure
 
-Ok, `ggplot2`follows a very simple structure made by to main components: 
+OK, `ggplot2`follows a very simple structure made by to main components: 
 
 - the aesthetics you want to plot (`aes()`);
 - the geometric form you want to represent (i.e. `geom_point()`).
@@ -84,15 +84,15 @@ ggplot(Clean_Data) + aes(year,tonnes) + geom_point()
 
 ## Geometrics 
 
-Ggplot2 offeres a laaaaaaarge variety of geometrics forms. From points, to lines, to maps to words, I keep finding new things to plot with `ggplot2`. Here are some of the basic geometrics, check out the [official webpage](https://ggplot2.tidyverse.org/reference/index.html#section-layer-geoms) for a more complete list:
+Ggplot2 offers a laaaaaaarge variety of geoms forms. From points, to lines, to maps to words, I keep finding new things to plot with `ggplot2`. Here are some of the basic Geom, check out the [official webpage](https://ggplot2.tidyverse.org/reference/index.html#section-layer-geoms) for a more complete list:
 
 - `geom_point`(); scatter plots
 - `geom_line`(); Line plots
-- `geom_histogram`(); historams, *note that these only need x*
+- `geom_histogram`(); histograms, *note that these only need x*
 - `geom_bar`(); Bar plots, this one is a little tricky, normally needs a "stat" component
-- `geom_boxplot`(); Boxplots
+- `geom_boxplot`(); Box plots
 
-One of the beauties of `ggplot2` is that most of these (and the others) geometrics use the same structure so you can easilly change from one to another, according on your preference.
+One of the beauties of `ggplot2` is that most of these (and the others) geometric use the same structure so you can easily change from one to another, according on your preference.
 
 ```{r Geometrics, eval = T, echo = T}
 
@@ -146,7 +146,7 @@ ggplot(data = subset(Clean_Data, scientific_name  == "Oncorhynchus kisutch")) + 
 
 ## Add some colors
 
-`ggplot2`gives you the option to color all your vaiables or to color them by some third variable. Note that, when you want all of your points in one same color you have to call `color` (or `colour`, `ggplot2`does not discriminate!) outside the aesthetics (`aes()`). Alternativeley, if you want to, say, set a color by species, this has to be within the `aes()`
+`ggplot2`gives you the option to color all your variables or to color them by some third variable. Note that, when you want all of your points in one same color you have to call `color` (or `colour`, `ggplot2`does not discriminate!) outside the aesthetics (`aes()`). Alternatively, if you want to, say, set a color by species, this has to be within the `aes()`
 
 ```{r Colours, eval = T, echo = T}
 
@@ -179,7 +179,7 @@ ggplot(data = Example_Data) +
 
 ## Adding components
 
-Now, the way `ggplot2` works is that you can keep adding components to your initial plot, lets see how this works by first naming our previus plot:
+Now, the way `ggplot2` works is that you can keep adding components to your initial plot, lets see how this works by first naming our previews plot:
 
 ```{r Adding_to_Plot, eval = T, echo = T}
 
@@ -223,7 +223,7 @@ P_Two <- P_One +
 
 ## Axis
 
-You can change, modify and eddit all your scales from the actual number to the title of the axis. There are several ways that you can work out your plot eddits, I use the `labs()` function, I think is more complet, but you have other alernatives. The `labs()`function has many options like:
+You can change, modify and edit all your scales from the actual number to the title of the axis. There are several ways that you can work out your plot edits, I use the `labs()` function, I think is more complete, but you have other alternatives. The `labs()`function has many options like:
 
  - Title and subtitle
 - x and y axis titles
@@ -231,7 +231,7 @@ You can change, modify and eddit all your scales from the actual number to the t
 - Figure caption
 - Figure tag; (i.e. Plot A and Plot B)
 
-* Note: to exclud a label you can set it to NULL (i.e. `labs(x = NULL)`) or to blank (i.e. `labs(x = "")`)
+* Note: to exclude a label you can set it to NULL (i.e. `labs(x = NULL)`) or to blank (i.e. `labs(x = "")`)
 
 ```{r Axis_Labels, eval = T, echo = F}
 
@@ -272,7 +272,7 @@ P_Four
 
 ## The "scales" family
 
-There are over 50 functions that control different aspects of your scales and plot looks like the color of categories, titles, shapes, limits, steps, transparency, etc. The scale family can be used in many (all?) aestetics, just match the aestetic with the scale you want:
+There are over 50 functions that control different aspects of your scales and plot looks like the color of categories, titles, shapes, limits, steps, transparency, etc. The scale family can be used in many (all?) aesthetics, just match the aesthetic with the scale you want:
 
 - `scale_fill_`, if you used `aes(fill = Variable)`
 - `scale_color_`, if you used `aes(color = Variable)`
@@ -304,7 +304,7 @@ ggplot() +geom_line( data = Example_Data,
 
 ## Themes
 
-The `theme()` function controls the overall apearence of the plot (packground, grids, axis size, etc.). There are some premade themes loaded in `ggplot2` like `theme_bw()` `theme_classic()` `theme_dark()` `theme_minimal()` and `theme_void()`. However, is you don't like any of those, or you want a versy specific thing, you can also modify, any aspect of your plot. At the beggining sounds horrible to write a line of code for every singly small detail (If you think about it it s the same as excel, is just that in excel you click and here we write).
+The `theme()` function controls the overall appearance of the plot (background, grids, axis size, etc.). There are some pre made themes loaded in `ggplot2` like `theme_bw()` `theme_classic()` `theme_dark()` `theme_minimal()` and `theme_void()`. However, is you don't like any of those, or you want a very specific thing, you can also modify, any aspect of your plot. At the begging sounds horrible to write a line of code for every singly small detail (If you think about it it s the same as excel, is just that in excel you click and here we write).
 
 
 
@@ -349,8 +349,7 @@ P_Three +
 
 ### Create your own theme
 
-So now, imagine you have a paper, your thesis or any other document where you are presenting > 5 plots, how anoying would it be to make sure they look the same in excel? Even worst, copy and paste that long-ass code and then change x5 evey decission. Well, fear do not! We can create a function for that!!!!
-
+So now, imagine you have a paper, your thesis or any other document where you are presenting > 5 plots, how annoying would it be to make sure they look the same in excel? Even worst, copy and paste that long-ass code and then change x5 every decision. Well, fear do not! We can create a function for that!!!!
 
 
 ```{r ggtheme_plot_fun, eval = T, echo = F}
@@ -394,5 +393,154 @@ P_Two +
 
 
 ```
+
+## Multiple plots in one
+
+There are many ways to create two plots in one. We will go trough the basic version build in Ggplot2, the `facet`family (e.g. `facet_wrap()` or `facet_grid()`). However, there are more advanced options (allow for more flexibility) such as the `gridExtra` and `cowplot` packages. A nice tutorial for these two can be found [Here](http://www.sthda.com/english/articles/24-ggpubr-publication-ready-plots/81-ggplot2-easy-way-to-mix-multiple-graphs-on-the-same-page/)
+
+```{r Facets, eval = T, echo = F}
+
+# Using facet_wrap()
+
+Multiple_Plots <- ggplot()  +geom_line( data = Example_Data,
+                                       aes(x = year, 
+                                           y = tonnes
+                                       ) # Note that we closed aes here!
+) +
+  # scale_colour_brewer() #+
+  # scale_colour_brewer(palette = "Greens") +
+  # scale_colour_brewer(palette = "Set2") +
+  scale_colour_brewer("Salmons",
+                      palette = "Set2") +
+  facet_wrap(~scientific_name,
+             ncol = 1, # number of cols, alternatively `nrow=`
+             scales = "free_y", # standarize scales
+             strip.position = "top") # left, right, bottom
+
+# Print me!
+Multiple_Plots
+
+### Theme also works in Multiple plots
+
+Multiple_Plots + theme(strip.text.x = element_text(size=8, angle=0,face="bold"),
+                       strip.background = element_rect(colour="red", fill="#CCCCFF")
+                       )
+
+
+### Double Variables !!!
+
+Example_Data <- SAU_Alaska %>% 
+  group_by(year,area_name,scientific_name,reporting_status) %>% 
+  summarise_if(is.numeric,sum,na.rm=T) %>% 
+  filter(scientific_name %in% c("Oncorhynchus kisutch","Oncorhynchus nerka","Oncorhynchus gorbuscha"))
+
+
+# We can also use facet_wrap()
+
+ggplot() +
+  geom_line( data = Example_Data,
+             aes(x = year, 
+                 y = tonnes/1000
+             ) # Note that we closed aes here!
+  ) + facet_wrap(~scientific_name + reporting_status,
+                 ncol = 2, # number of cols, alternatively `nrow=`
+                 scales = "free_y", # standarize scales
+                 strip.position = "top")
+
+# facet_grid()
+
+ggplot() +
+  geom_line( data = Example_Data,
+             aes(x = year, 
+                 y = tonnes/1000
+             ) # Note that we closed aes here!
+  ) + facet_grid(scientific_name ~ reporting_status,
+                 scales = "free") +
+   theme(strip.text.x = element_text(size=8, angle=0,face="bold"),
+                       strip.text.y = element_text(size=5, angle=45,face="bold"),
+                       strip.background = element_rect(colour="red", fill="#CCCCFF")
+                       )
+
+
+```
+
+## One nice plot to end the day
+
+```{r The_Final_Plot, eval = T, echo = T}
+
+### Example Data ###
+
+Example_Data <- SAU_Alaska %>% 
+  group_by(year,area_name,scientific_name,fishing_sector) %>% 
+  summarise_if(is.numeric,sum,na.rm=T) %>% 
+  filter(scientific_name %in% c("Oncorhynchus kisutch","Oncorhynchus nerka","Oncorhynchus gorbuscha")) %>% 
+  filter(fishing_sector != "Subsistence")
+
+Breaks <- seq(1950,2010,10)
+
+ggplot() +
+  geom_line( data = Example_Data,
+             aes(x = year, 
+                 y = tonnes/1000,
+                 colour = scientific_name
+             ) # First we creat main plot
+  ) + facet_wrap(~fishing_sector, # Then we face wrap by Species and sector
+                 ncol = 3, # number of cols, alternatively `nrow=`
+                 scales = "free_y", # standarize scales
+                 strip.position = "top") + 
+  # Now we include labels
+  labs(title = "Landings statistics for Alaska between 1951 - 2010", # You can also use the "labs()" function
+       subtitle = "Presenting pink, coho , and sockeye salmon by sector",
+       x = "Year \n(1951 - 2010)",
+       y = "Total landings (tonnes)",
+       color = "Species",
+       caption = "*Data from The Sea Around Us",
+       tag = "A") +
+  scale_color_brewer(palette = "Set1") +
+  scale_x_continuous(breaks = Breaks) + # Set the ticks of the plot
+  # Now we eddit the apearence 
+  theme(
+    plot.title = element_text(face = "bold",
+                              colour = "blue"),
+    plot.subtitle = element_text(face = "italic",
+                                 colour = "blue"),
+    panel.background = element_blank(), # clean background
+    strip.background = element_rect(colour="black",fill = "lightgrey"), # clean background
+    panel.border     = element_blank(), # No pannel border
+    panel.grid.minor = element_line(colour="grey95"),
+    panel.grid.major = element_blank(), # No grids
+    axis.ticks = element_blank(),
+    axis.text.x = element_text(size = 10,
+                               angle = 45,
+                               face = "plain"),
+    axis.text.y = element_text(size = 8),
+    axis.title = element_text(size = 14),
+    # legend.key = element_rect(colour = "black", # Around boxes
+    #                           fill = "grey90"), # legend boxes
+        legend.key = element_blank(),
+    legend.position  = "bottom",
+    legend.title = element_text(size = 12),
+    legend.text = element_text(size = 10)
+  )
+  
+# And now we save our plot!
+
+Plot_Name <- "Example_Plot.png"
+Path_Save <- "./" # some path where you want to save the plot
+
+ggsave(Plot_Name,
+       plot = last_plot(), # or you can say plot = Plot_4
+       width = 9,
+       height = 5,
+       units = "in",
+       path = Path_Save)
+
+```
+
+
+
+# Some other cool stuff you can do with ggplot2
+
+So `ggplot2` is a powerful package that can create beautiful graphs, but it has also evolved in something way more powerful. Because it is part of the Tydyverse family, you can combine your data manipulation and pipe it ( %>% ) all the way to your final graph! You can also make dynamic plots with the `plotty` package; maps with `geom_sf()`, `geom_tile()` and `geom_polygon()`; and recently I discovered that you can make GIFs with ``. Here follow some cool things you can do!
 
 
