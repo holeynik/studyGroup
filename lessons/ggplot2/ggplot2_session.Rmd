@@ -637,8 +637,12 @@ ggplot(Subset_Map) +
 # install.packages('devtools')
 
 # Install packcage gganimate from developer
-# devtools::install_github('thomasp85/gganimate')
-# library(gganimate)
+devtools::install_github('thomasp85/gganimate')
+
+#  It will also as you for the following package (no need to load it, thou)
+install.packages('gifski')
+
+library(gganimate)
 
 # Create a dataset for the example
 Animate_Data <- SAU_Alaska %>% 
