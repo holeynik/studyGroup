@@ -115,6 +115,35 @@ ggplot(data = Clean_Data) + # call ggplot with your data
 ```
 
 
+## Aesthetics
+
+Another important component of ggplot2 are the aesthetics. 
+
+```{r Aesthetics, eval = T, echo = T}
+
+# I can combine functions within the aesthetics such as.
+
+ggplot(data = subset(Clean_Data, scientific_name %in% c("Oncorhynchus kisutch","Oncorhynchus nerka","Oncorhynchus gorbuscha"))) + # I can subset my data within ggplot
+  geom_point(
+    aes(x = year/10, # I can devide variables
+        y = log10(tonnes)) # plot tonnes in a log scale
+    )  # ggplot "adds"" compo
+
+
+# I can also change the order of axis...
+
+ggplot(data = subset(Clean_Data, scientific_name  == "Oncorhynchus kisutch")) + # I choose one species
+  geom_point(
+    aes(x = reorder(year, tonnes), # Reorder the years from lowest catch to highest
+        # x = reorder(year, desc(tonnes)), # desc will invert it!
+        y = tonnes
+        )
+    )
+
+
+```
+
+
 ## Add some colors
 
 `ggplot2`gives you the option to color all your vaiables or to color them by some third variable. Note that, when you want all of your points in one same color you have to call `color` (or `colour`, `ggplot2`does not discriminate!) outside the aesthetics (`aes()`). Alternativeley, if you want to, say, set a color by species, this has to be within the `aes()`
@@ -158,7 +187,7 @@ Now, the way `ggplot2` works is that you can keep adding components to your init
 P_One <- ggplot(data = Clean_Data) + # call ggplot with your data
   geom_point(
     aes(x = year, # Note that the aesthetics set your x and y variables
-        y = tonnes),
+        y = tonnes/10000),
     colour = "grey"
     )
 
@@ -170,7 +199,7 @@ P_One <- ggplot(data = Clean_Data) + # call ggplot with your data
 P_One + 
   geom_line( data = Example_Data,
     aes(x = year, 
-        y = tonnes,
+        y = tonnes/10000,
         color = scientific_name
         ) # Note that we closed aes here!
     )
@@ -206,7 +235,6 @@ You can change, modify and eddit all your scales from the actual number to the t
 
 ```{r Axis_Labels, eval = T, echo = F}
 
-
 # First lets work with the labels, you can use
 
 # Lets use our previus plot
@@ -217,7 +245,7 @@ P_Three <- P_Two +
        y = "Total landings (tonnes)",
        color = "Species",
        caption = "*Data from The Sea Around Us",
-       tag = "A")
+       tag = "A");P_Three
 
 # You can use other ways...
 # P_Two + 
@@ -266,7 +294,7 @@ ggplot() +geom_line( data = Example_Data,
     ) +
   # scale_colour_brewer() #+
   # scale_colour_brewer(palette = "Greens") +
-  scale_colour_brewer(palette = "Set2") +
+  # scale_colour_brewer(palette = "Set2") +
   scale_colour_brewer("Salmons",
                       palette = "Set2")
 
@@ -274,9 +302,60 @@ ggplot() +geom_line( data = Example_Data,
 ```
 
 
-# From me to you
+## Themes
+
+The `theme()` function controls the overall apearence of the plot (packground, grids, axis size, etc.). There are some premade themes loaded in `ggplot2` like `theme_bw()` `theme_classic()` `theme_dark()` `theme_minimal()` and `theme_void()`. However, is you don't like any of those, or you want a versy specific thing, you can also modify, any aspect of your plot. At the beggining sounds horrible to write a line of code for every singly small detail (If you think about it it s the same as excel, is just that in excel you click and here we write).
+
+
+
+```{r Themes, eval = T, echo = T}
+
+# Check out some of the themes
+P_Three +
+  # theme_bw() +
+  # theme_classic() +
+  # theme_dark() +
+  # theme_minimal() 
+  theme_void()
+
+# Manually change things
+  P_Three + theme(
+    plot.title = element_text(face = "bold",
+                              colour = "blue"),
+    plot.subtitle = element_text(face = "italic",
+                                 colour = "lightblue"),
+    panel.background = element_blank(), # clean background
+    strip.background = element_blank(), # clean background
+    panel.border     = element_blank(), # No pannel border
+    panel.grid.minor = element_blank(), # No grids
+    panel.grid.major = element_blank(), # No grids
+    axis.ticks = element_blank(),
+    axis.text.x = element_text(size = 10,
+                               angle = 0,
+                               face = "plain"),
+    axis.text.y = element_text(size = 12),
+    axis.title = element_text(size = 14),
+    legend.key = element_rect(colour = "black", # Around boxes
+                              fill = "grey90"), # legend boxes
+    legend.position  = "bottom",
+    legend.title = element_text(size = 12),
+    legend.text = element_text(size = 10)
+  )
+
+
+
+```
+
+
+### Create your own theme
+
+So now, imagine you have a paper, your thesis or any other document where you are presenting > 5 plots, how anoying would it be to make sure they look the same in excel? Even worst, copy and paste that long-ass code and then change x5 evey decission. Well, fear do not! We can create a function for that!!!!
+
+
 
 ```{r ggtheme_plot_fun, eval = T, echo = F}
+
+# Create the function with the theme you like
 
 ggtheme_plot <- function() {
   theme(
@@ -295,12 +374,25 @@ ggtheme_plot <- function() {
     axis.title = element_text(size = 14),
     legend.key = element_rect(colour = NA, fill = NA),
     legend.position  = "top",
-    legend.title = element_text(size = 16),
-    legend.text = element_text(size = 14),
-    strip.text.x = element_text(size = 18, colour = "darkgrey"),
-    strip.text = element_text(size = 18)
+    legend.title = element_text(size = 12),
+    legend.text = element_text(size = 10),
+    strip.text.x = element_text(size = 12, colour = "darkgrey"),
+    strip.text = element_text(size = 10)
   )
 }
+
+
+# Call the plot + the function
+
+P_Three +
+  ggtheme_plot()
+
+P_Two +
+  ggtheme_plot()
+  
+
+
+
 ```
 
 
