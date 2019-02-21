@@ -607,7 +607,7 @@ ggplot(Subset_Map) +
 
 ## Move your grpahs for presenations! 
 
-`ggplot2` combines with `gganimate` to create dynamic plots, perfect for presentations! *Note that this chunk needs extra packages that you will have to install and load before runing it*
+`ggplot2` combines with `gganimate` to create dynamic plots, perfect for presentations! This is just a small example but you can find a more complete tutorial [Here](https://github.com/eco-data-science/eds-ggplot2-gganimate/blob/master/gganimate_key.Rmd) *Note that this chunk needs extra packages that you will have to install and load before runing it*
 
 ```{r Moving_Point, eval = F , echo = F}
 
