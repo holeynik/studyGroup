@@ -2,3 +2,6 @@ client_secret.json
 _site/
 .Rproj.user
 .Rhistory
+lessons/Intro_Map/Data/ne_10m_coastline
+lessons/Intro_Map/Data/World_EEZ_v8_2014
+lessons/Intro_Map/Data/World_EEZ_v8_20140228_LR
