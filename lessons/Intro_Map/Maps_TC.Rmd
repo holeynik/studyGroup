@@ -1,0 +1,236 @@
+---
+title: "How to make maps in R"
+author: "Tim Cashion"
+date: "01/10/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+ipak <- function(pkg){
+    new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+    if (length(new.pkg)) 
+        install.packages(new.pkg, dependencies = TRUE)
+    sapply(pkg, require, character.only = TRUE)
+} #Best function of your life.
+
+# usage
+packages <- c("tidyverse", "sf", "sp", "rnaturalearth", "aquamapsdata")
+ipak(packages)
+
+```
+
+
+
+## Map sources
+
+There are tons of free map data sources and a bunch of R packages that integrate it well. One of the main sources I use is [Natural Earth 10-m-resolution coastline shapefile](http://www.naturalearthdata.com/downloads/10m-physical-vectors/). You can visit the website to find different versions or types of files, and they mainly come in three resolution formats: 10m (fine), 50m (medium), 110m (coarse). The resolution translates directly into mapping and processing speed with finer resolution taking much longer. As I'm working through lots of examples, I'll use the coarser/lower resolution maps for most of these.
+
+Natural Earth also has its own R package called rnaturalearth
+
+```{r}
+library(rnaturalearth)
+land110 <- ne_download(scale = 110, type = 'land', category = 'physical')
+sp::plot(land110)
+```
+
+If you want to fill in the land, you should use a land shapefile. If you want only the outline of the continents/islands, use a coastline file. 
+
+```{r}
+coast110 <- ne_download(scale = 110, type = 'coastline', category = 'physical')
+sp::plot(coast110)
+```
+
+They originally look the same, but if you convert it to a 'simple features' object (sf), you can see the difference. 
+
+```{r}
+land110_sf <- st_as_sf(land110)
+ggplot(land110_sf) + geom_sf(fill="blue")
+
+coast110_sf <- st_as_sf(coast110)
+ggplot(coast110_sf) + geom_sf(color="blue")
+
+```
+
+Alternatively, you might want country level data like in making a world map. 
+```{r}
+country110 <- ne_countries()
+
+x <- ne_download(scale=110, type="countries", category="cultural", returnclass="sf")
+?ne_download
+country110_sf <- st_as_sf(country110)
+ggplot(country110_sf) + geom_sf(aes(fill=as.factor(mapcolor7))) + theme(legend.position="none")
+
+```
+
+But, it's hard to see what's going on at a smaller level with this world level data. You have two options:  
+1. Zoom in to a subset of the current map.   
+1. Find a smaller scale map that is of your area of interest.   
+
+Another good source for country level data including subunits is http://www.diva-gis.org/gdata  
+
+
+```{r crop}
+dims <- c(xmin=-130, xmax=-120, ymin=45, ymax=55)
+bc_country <- st_crop(x=country110_sf, y=dims)
+bc_country %>% ggplot() + geom_sf()
+```
+
+Notice any problems?    
+1. Islands are missing  
+1. Coastline is very smooth.   
+1. Generally unrealistic.   
+
+Ways to fix this:
+1. Use the higher resolution world map when working at this scale
+2. Use a finer resolution regional map. 
+
+### Regional
+
+```{r sub-national}
+#sub_units <- ne_download(scale=110, type="map_subunits",  category="cultural")
+states <- ne_states()
+states_sf <- st_as_sf(states)
+states_sf_pe <- states_sf %>% filter(sov_a3=="PER") #Filter out to one country as otherwise it takes forever.
+ggplot(states_sf_pe) + geom_sf()
+
+```
+
+
+## Use of maps in science
+
+- Reference maps (classic figure 1)
+- Raster maps
+- Geographic entity maps
+- Maps with data on top (dots, lines, etc.)
+
+
+## Reference Maps
+Reference maps are often used to orient the audience to a study area they may be unfamiliar with. These are most effective when they situate it within some kind of knowledge that they have already. Thus, they often use a small scale and a large scale map. 
+
+```{r reference-map}
+
+#Example based off data from Natalie Mahara 
+
+country10_sf <- ne_countries(scale=10, returnclass = "sf")
+dims <- c(xmin=-129, xmax=-123, ymin=48, ymax=52)
+bc_country <- st_crop(x=country10_sf, y=dims)
+inset <- bc_country %>% 
+  ggplot() + 
+  geom_sf() + 
+  annotate(geom="rect", ymax=49.4, ymin=49.7, xmin=-125, xmax=-124.65, color="red", alpha=0.2, size=1.2)
+
+map <- bc_country %>% 
+  ggplot() + 
+  geom_sf() + 
+  coord_sf(xlim = c(-125.00, -124.65), ylim=c(49.40, 49.70))
+
+# sites <- read_csv("./Data/bs_stns.csv")
+
+library(grid)
+grid.newpage() 
+vp_map<-viewport(width=.8, height=.9, x=0.5, y=0.5) 
+vp_inset<-viewport(width=0.3, height=0.3, x=0.2, y=0.2)
+print(map, vp=vp_map)
+print(inset, vp=vp_inset)
+
+```
+
+
+## Raster Maps
+Rasters are simplifications of spatial data according to a certain resolution size. 
+
+```{r}
+#WARNING: EXAMPLE USES FAKE DATA 
+#devtools::install_github("raquamaps/aquamapsdata")
+#download_db(force=TRUE)
+my_db <- aquamapsdata:::src_sqlite_aquamapsdata()
+species_map <- my_db %>% tbl("nativemaps") %>% filter(SpeciesID=="ITS-Mam-180528") %>% collect
+am_map <- my_db %>% tbl("hcaf") %>% collect %>% select(CsquareCode, CenterLat, CenterLong, CellArea)
+am_species_maps <- species_map %>% left_join(am_map)
+am_species_maps %>% 
+  ggplot(aes(x=CenterLong, y=CenterLat, fill=probability)) +
+  geom_tile() #Geom_tile or geom_raster are the standard commands for plotting rasters. 
+
+```
+
+
+## Geographic Entity Maps
+We've already made one of these that was filled on a map feature. The main point with these is having a column attached to your dataframe that you are interested in plotting. Then, the polygons are filled based on that. 
+
+```{r}
+#WARNING: EXAMPLE USES FAKE DATA 
+states_sf_pe$capacity <- rnorm(nrow(states_sf_pe), mean=10, sd=3) #Make up some data for the column we'll map to. 
+states_sf_pe %>% 
+  ggplot() + 
+  geom_sf(aes(fill=capacity))
+
+```
+
+
+## Maps with Data on Top
+These are actually fairly simple to make in R. Make your map, add your data! 
+
+```{r}
+country10_sf <- ne_countries(scale=10, returnclass = "sf")
+dims <- c(xmin=-129, xmax=-123, ymin=48, ymax=52)
+bc_country <- st_crop(x=country10_sf, y=dims)
+map <- bc_country %>% 
+  ggplot() + 
+  geom_sf() + 
+  coord_sf(xlim = c(-125.00, -124.65), ylim=c(49.40, 49.70))
+
+df <- tibble(lon = c(-124.8, -124.7, -124.9),
+             lat = c(49.5, 49.6, 49.55),
+             value = c("water", "water", "land"))
+
+bc_map <- map + 
+  geom_point(data=df, aes(x=lon, y=lat, color=value)) 
+
+```
+
+
+## Making attractive maps
+Standard themes are not good for maps. Background gridlines can be distracting, breaks and on the axes are often too frequent. The maps we've made up till now haven't been labeled with proper legends. 
+
+
+
+```{r}
+bc_map +
+  theme_classic() + 
+  xlab("") + 
+  ylab("") + 
+  labs(color="Station type") + 
+  scale_color_manual(values=c("#1b9e77", "#d95f02")) +
+  scale_x_continuous(breaks = c(-124.9, -124.7), labels=c("124.9W", "124.7W")) +
+  scale_y_continuous(breaks = c(49.6, 49.4), labels=c("49.6W", "49.4W")) +
+  annotate("text", x=-124.9, y=49.45, label="Vancouver Isl.") + 
+  annotate("text", x=-124.8, y=49.55, label="Other Isl.") 
+
+```
+
+
+Other resources:
+- Test out colors and get advice for color-blind/print friendly maps: 
+  http://colorbrewer2.org/#type=sequential&scheme=BuGn&n=3
+
+
+
+## Points to cover
+
+st_simplify
+```{r, eval=F}
+x <- st_simplify(states_sf_pe, dTolerance = 0.1)
+
+
+ggplot(x) + geom_sf()
+
+
+x <- st_simplify(states_sf, dTolerance = 0.1)
+ggplot(x) + geom_sf()
+```
+
+
+
+
