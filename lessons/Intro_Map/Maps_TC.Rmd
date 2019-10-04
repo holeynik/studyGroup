@@ -16,7 +16,7 @@ ipak <- function(pkg){
 } #Best function of your life.
 
 # usage
-packages <- c("tidyverse", "sf", "sp", "rnaturalearth", "aquamapsdata")
+packages <- c("tidyverse", "sf", "sp", "rnaturalearth")
 ipak(packages)
 
 ```
@@ -58,10 +58,11 @@ Alternatively, you might want country level data like in making a world map.
 country110 <- ne_countries()
 
 x <- ne_download(scale=110, type="countries", category="cultural", returnclass="sf")
-?ne_download
-country110_sf <- st_as_sf(country110)
-ggplot(country110_sf) + geom_sf(aes(fill=as.factor(mapcolor7))) + theme(legend.position="none")
 
+country110_sf <- st_as_sf(country110)
+ggplot(country110_sf) + geom_sf(aes(fill=as.factor(mapcolor9))) + theme(legend.position="none") + scale_fill_brewer(palette="Greys")
+
+ggplot(country110_sf) + geom_sf(fill="grey50") + theme(legend.position="none")
 ```
 
 But, it's hard to see what's going on at a smaller level with this world level data. You have two options:  
@@ -82,6 +83,14 @@ Notice any problems?
 1. Coastline is very smooth.   
 1. Generally unrealistic.   
 
+```{r}
+country10_sf <- ne_download(scale=10, type="countries", category="cultural", returnclass="sf")
+
+dims <- c(xmin=-130, xmax=-120, ymin=45, ymax=55)
+bc_country <- st_crop(x=country10_sf, y=dims)
+bc_country %>% ggplot() + geom_sf()
+```
+
 Ways to fix this:
 1. Use the higher resolution world map when working at this scale
 2. Use a finer resolution regional map. 
@@ -90,12 +99,21 @@ Ways to fix this:
 
 ```{r sub-national}
 #sub_units <- ne_download(scale=110, type="map_subunits",  category="cultural")
+?ne_download
 states <- ne_states()
 states_sf <- st_as_sf(states)
 states_sf_pe <- states_sf %>% filter(sov_a3=="PER") #Filter out to one country as otherwise it takes forever.
 ggplot(states_sf_pe) + geom_sf()
 
+
 ```
+
+```{r}
+air <- ne_download()
+ports <- ne_download
+
+```
+
 
 
 ## Use of maps in science
@@ -119,7 +137,7 @@ bc_country <- st_crop(x=country10_sf, y=dims)
 inset <- bc_country %>% 
   ggplot() + 
   geom_sf() + 
-  annotate(geom="rect", ymax=49.4, ymin=49.7, xmin=-125, xmax=-124.65, color="red", alpha=0.2, size=1.2)
+  annotate(geom="rect", ymax=49.4, ymin=49.7, xmin=-125, xmax=-124.65, color="red", alpha=0, size=1.2)
 
 map <- bc_country %>% 
   ggplot() + 
@@ -131,7 +149,7 @@ map <- bc_country %>%
 library(grid)
 grid.newpage() 
 vp_map<-viewport(width=.8, height=.9, x=0.5, y=0.5) 
-vp_inset<-viewport(width=0.3, height=0.3, x=0.2, y=0.2)
+vp_inset<-viewport(width=0.3, height=0.3, x=0.1, y=0.8)
 print(map, vp=vp_map)
 print(inset, vp=vp_inset)
 
@@ -142,13 +160,14 @@ print(inset, vp=vp_inset)
 Rasters are simplifications of spatial data according to a certain resolution size. 
 
 ```{r}
-#WARNING: EXAMPLE USES FAKE DATA 
 #devtools::install_github("raquamaps/aquamapsdata")
 #download_db(force=TRUE)
 my_db <- aquamapsdata:::src_sqlite_aquamapsdata()
 species_map <- my_db %>% tbl("nativemaps") %>% filter(SpeciesID=="ITS-Mam-180528") %>% collect
 am_map <- my_db %>% tbl("hcaf") %>% collect %>% select(CsquareCode, CenterLat, CenterLong, CellArea)
 am_species_maps <- species_map %>% left_join(am_map)
+
+
 am_species_maps %>% 
   ggplot(aes(x=CenterLong, y=CenterLat, fill=probability)) +
   geom_tile() #Geom_tile or geom_raster are the standard commands for plotting rasters. 
@@ -162,6 +181,11 @@ We've already made one of these that was filled on a map feature. The main point
 ```{r}
 #WARNING: EXAMPLE USES FAKE DATA 
 states_sf_pe$capacity <- rnorm(nrow(states_sf_pe), mean=10, sd=3) #Make up some data for the column we'll map to. 
+
+df <- tibble(adm1_code= states_sf_pe$adm1_code, 
+             capacity = rnorm(nrow(states_sf_pe), mean=10, sd=3))
+states_sf_pe <- left_join(states_sf_pe, df)
+
 states_sf_pe %>% 
   ggplot() + 
   geom_sf(aes(fill=capacity))
@@ -186,34 +210,73 @@ df <- tibble(lon = c(-124.8, -124.7, -124.9),
              value = c("water", "water", "land"))
 
 bc_map <- map + 
-  geom_point(data=df, aes(x=lon, y=lat, color=value)) 
+  geom_point(data=df, aes(x=lon, y=lat, color=value), size=2)# +
+  #theme(legend.position = "none")
 
+bc_map
+```
+
+## Combining different map layers
+Combining different layers on a map is *fairly* simple. You start with your base map layer, and then you add the different geom_ layers as you like.
+```{r}
+
+country10_sf <- ne_countries(scale=10, returnclass = "sf")
+dims <- c(xmin=-100, xmax=-180, ymin=0, ymax=90)
+pacific <- st_crop(x=country10_sf, y=dims)
+map <- pacific %>% 
+  ggplot() + 
+  geom_sf()
+
+df_points <- tibble(lon = c(-124.8, -124.7, -124.9),
+             lat = c(49.5, 49.6, 49.55),
+             value = c("water", "water", "land"))
+
+df_track <- tibble(species="Sockeye salmon", 
+                   lon= seq(-120, -170, -1),
+                   lat= rnorm(n= length(seq(-120, -170, -1)), mean=49.5, sd=2))
+
+
+
+pac_map <- map + 
+  geom_point(data=df_points, aes(x=lon, y=lat, color=value), size=5) +
+  geom_path(data=df_track, aes(x=lon, y=lat, group=species, color=species)) +
+  geom_rect(aes(xmin= -125, xmax=-130, ymin=49.5, ymax=54.5), color="red", alpha=0.2) +
+  NULL
+pac_map
 ```
 
 
 ## Making attractive maps
 Standard themes are not good for maps. Background gridlines can be distracting, breaks and on the axes are often too frequent. The maps we've made up till now haven't been labeled with proper legends. 
 
-
-
 ```{r}
 bc_map +
-  theme_classic() + 
+  theme_minimal() + 
   xlab("") + 
   ylab("") + 
   labs(color="Station type") + 
   scale_color_manual(values=c("#1b9e77", "#d95f02")) +
   scale_x_continuous(breaks = c(-124.9, -124.7), labels=c("124.9W", "124.7W")) +
   scale_y_continuous(breaks = c(49.6, 49.4), labels=c("49.6W", "49.4W")) +
-  annotate("text", x=-124.9, y=49.45, label="Vancouver Isl.") + 
-  annotate("text", x=-124.8, y=49.55, label="Other Isl.") 
+  annotate("text", x=-124.9, y=49.45, label="Vancouver Isl.", size=6) + 
+  annotate("text", x=-124.8, y=49.55, label="Denman Isl.") 
 
 ```
+
+
+
 
 
 Other resources:
 - Test out colors and get advice for color-blind/print friendly maps: 
   http://colorbrewer2.org/#type=sequential&scheme=BuGn&n=3
+- http://www.marineregions.org/downloads.php
+
+
+```{r}
+ne_download()
+?ne_download
+```
 
 
 
