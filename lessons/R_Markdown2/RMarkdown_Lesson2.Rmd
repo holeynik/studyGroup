@@ -1,0 +1,109 @@
+---
+title: "RMarkdown Lesson"
+author: "Tim Cashion"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output:
+  bookdown::html_document2
+bibliography: MyCollection.bib
+biblio-style: "apalike"
+---
+
+This lesson was demonstrated for the Deep Sea Data Squad at UBC in Novemeber of 2019. As such, the code is not a formal lesson but shows how to do some common tasks in RMarkdown. 
+
+
+```{r setup, include=FALSE}
+
+# install.packages("rmarkdown")
+# install.packages("knitr")
+# install.packages("bookdown")
+
+knitr::opts_chunk$set(echo = FALSE)
+library(tidyverse)
+library(bookdown)
+# #library(knitr)
+
+
+```
+
+# Read in data
+(Headings come in different levels (#, ##, ###, ####))
+Our data is from...
+
+
+## Data Sources
+Data is fun. 
+
+### Data sources really detailed 
+We got out data from Fishbase [@Froese2012], through the RFishbase package [@Boettiger2012]. 
+
+```{r data}
+df <- tibble(x=rnorm(100, mean=0, sd=1))
+```
+
+# Analysis
+
+There is a non-linear relationship between $x$ and $y$.
+$$ y = x^2 $$
+When 
+
+$log(y_{it}) = \alpha Fish_{it} + \beta Length_{it} + \gamma_{i} + \Delta_{t} + \epsilon_{it}$ (1)   
+
+
+$\delta_{time}$ (2)
+
+$$\sum \alpha \varepsilon$$ (3)
+klsadflkjasdklj  
+
+Line breaks need to be explicit ("\<br>"), or with two spaces. 
+<br>
+
+sadflkjasdl;kfjklsajdl
+
+
+You can insert pictures of Cats (or other stuff). 
+![Figure 1: Mr. Cat](./cat.png)
+
+Find out more [here](https://www.codecogs.com/latex/eqneditor.php)
+
+
+
+
+```{r analysis}
+df$y <- df$x ^ 2 
+
+x_mean <- mean(df$x)
+
+y_mean <- mean(df$y)
+
+```
+
+# Results 
+
+```{r figure1, fig.width=8, fig.height=5, fig.cap="This is a plot"}
+fig1 <- df %>% 
+  ggplot(aes(x=x)) + 
+  geom_histogram()
+print(fig1)
+```
+
+Our results are clearly shown in Figure \@ref(fig:figure1). 
+
+While we *expect* a value of 0 for our mean, our **actual mean** is `r toString(round(x_mean,6))`. Our unrounded mean is `r toString(x_mean)`. 
+When we don't use toString, let's see what happens `r x_mean`.
+
+For more details, see Table \@ref(tab:kable-table).
+
+```{r table1, eval=FALSE}
+ss_df <- summary(df)
+ss_df
+```
+
+
+```{r kable-table}
+ss_df <- summary(df)
+knitr::kable(ss_df, caption = "Summary statistics of our data")
+```
+
+
+# Works Cited
+
